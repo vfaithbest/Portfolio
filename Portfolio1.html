@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<hmtl lang="en">
+    <head>
+        <meta charset = "UTF-8">
+        <title>Faith's Portfolio</title>
+        <link rel="Stylesheet" href="Stylesheet2.css">
+    </head>
+    <body>
+        <header>
+            <div id="topAnchor">
+                <h1><a href="Home.html">Faith Best</a></h1>
+                <nav>
+                    <ul>
+                        <li><a href="About.html" class = "button" >About</a></li>
+                        <li><a href="Web.html" class = "button">Web</a></li>
+                        <li><a href="Portfolio.html" class = "button">Chartography</a></li>
+                        <li><a href="Portfolio1.html" class = "button" id="CurrentPage">Code</a></li>
+                        <li><a href="Resume.html" class = "button">Resume</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+        <div class = "CodeAlign">
+            <div class="contentBG">
+                <h2>Code Samples</h2>
+            </div>
+            <div class = "container, contentBG">
+                <div class = "container, contentBG">
+                    <div>
+                        <h4>Arcpy Provincial Park Suitbaility Anlayisis Code</h4>
+                    </div>
+                    <div class="contentBG">
+                        <p class="BioPara">The following code is a program a group of students and I created to find the most suitable parks in a radius specified by the user and their preference for park activities. The parks used in this code are from southwestern Ontario and the program works by utilizing Arcpy and writing and reading from a CSV. This project was complex and there were a lot of errors that occurred during the various stages, I was a key player in getting the geoprocessing tools to function and analyze the data as well as the problem-solving. This project could be utilized for many different applications, leveraging the same skills and methodology. I am excited to write more programs like this in the future.  
+                        </p>
+                    </div>
+                    <div class="image, contentBG">
+                        <img src="PythonFinal.png" alt="The visual output of the following code, showcasing suitable Provincial Parks.">
+                    </div>
+                </div>
+                <pre>
+                    <code id="leftalign">
+                    # ---------------------- Suitability Analysis ---------------------
+# ----------- Provincial Parks in South-Western Ontario -----------
+# -------------------Last modified 2023-12-07 -----------------------
+# Created By Chun Kit Chung, Naini Singh, Jordan Steinman, Kiran Duwadi and Faith Best
+#----------------------------------------------------------------------------------------
+# Kiran Duwadi contributed the ColourSymbology function, testing the code, error handling 
+#     and created the test value table, while also helpinhg figure out the main function, 
+#     the Selcted parks function and the user input.
+# Jordan Steinman created the main program and the main function as well as helped with 
+#     error handling, testing the code, error handling and contibuted to the ColourSymbology function.
+# Naini Singh started the SelectingParks function and did most of the error handling while also helping 
+#     with the ColourSymbology function, the main function and testing the code.
+# Chun Kit Chung contributed by creating the ListSelectedPark function and figured out the f string 
+#     formating while also working on the loops in the code and helped with error handling. 
+# Faith Best worked on the text file function the buffer and intersect as well as the create point 
+#     feature function. 
+#--------------------------------------------------------------------------------------------
+# The purpose of this program is to support a user in finding Provincial Parks in South-Western Ontario
+    # by creating a search radius around the user's starting location and returning a list with all the
+    # parks in their area. This program also allows the user to refine their results by searching only
+    # for parks that have the activities they are interested in.
+#Assumptions and conditions made that affeced the structing of this program are as follows:
+    # The coordinate units are decimal degrees, and search distance units are kilometres
+    # The imported data set was modified to include a data set of the 35 Provincial Parks within
+    # South-Western Ontario 
+    # This program has the park data for camping, hiking and swimming activities. Other activities 
+    # not included in this list may still be available at the parks
+    # When an activity is not wanted, the park will still stay in the final outputted list but move 
+    # down in match ranking 
+    # As this dataset is a standalone dataset and does not get updated,users should check park website
+    # for availability, hours, or closures
+#-------------------------------------Sources-------------------------------------------------------
+#Most functions are built in ArcGIS Pro model builder and exported into python
+#help from ArcGIS Online: https://pro.arcgis.com/en/pro-app/3.1/arcpy/get-started/installing-python-for-arcgis-pro.htm
+#Course material taught by Karen Whillans
+
+import arcpy
+from arcpy import env
+import os # operating system
+
+
+
+#Creates .csv like Table from passed in x and y coordinates
+def TableCoordinates(VariableX,VariableY):
+    Table1 = open('StartingPointTable.csv','w')
+    Table1.write('x-coordinate,y-coordinate')
+    Table1.write("\n"+str(VariableX)+","+str(VariableY))
+    Table1.close()
+
+
+#Created points the x and y point after user input, using an
+def CreatePointFeature(cwd):
+    try:
+        # To allow overwriting outputs change overwriteOutput option to True.
+        arcpy.env.overwriteOutput = True
+        StartingPointTable_csv = cwd + r"\StartingPointTable.csv"
+        # Process: XY Table To Point (XY Table To Point) (management)
+        Output_Feature_Class = cwd +r"\Default.gdb\StartingPointNEW"
+        arcpy.management.XYTableToPoint(in_table=StartingPointTable_csv, \
+        out_feature_class=Output_Feature_Class, x_field="x-coordinate", \
+        y_field="y-coordinate", coordinate_system="GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision")
+    except arcpy.ExecuteError:
+        print(arcpy.GetMessages(2))
+    except Exception as e:
+        print("Unexpected Error!", "e")
+
+#Generating driving distance
+def Buffer(cwd, Distance): 
+    # To allow overwriting outputs change overwriteOutput option to True.
+    arcpy.env.overwriteOutput = True
+    StartingPointNEW = cwd + r"\Default.gdb\StartingPointNEW"
+    # Process: Buffer (Buffer) (analysis)
+    StartingPointNEW_Buffer = cwd +r"\Default.gdb\StartingPointNEW_Buffer"
+    arcpy.analysis.Buffer(in_features=StartingPointNEW, out_feature_class=StartingPointNEW_Buffer, buffer_distance_or_field= str(Distance) + " Kilometers")
+
+#Ensuring parks are only within driving distance
+def Intersect(cwd): 
+    # To allow overwriting outputs change overwriteOutput option to True.
+    arcpy.env.overwriteOutput = True
+    StartingPointNEW_Buffer = cwd + r"\Default.gdb\StartingPointNEW_Buffer"
+    SouthWesternParkWITHAttributes = cwd + r"\Default.gdb\SouthWesternParkWITHAttributes"
+    ParksIntersectLayer = cwd + r"\Default.gdb\ParksIntersect"
+    # Process: Intersect (2) (Intersect) (analysis)
+    arcpy.analysis.Intersect(in_features=[[StartingPointNEW_Buffer, ""], [SouthWesternParkWITHAttributes, ""]], out_feature_class=ParksIntersectLayer)
+
+#Symbolizing the layers of parks to show green as best suited and red as least
+def ColourSymbology(cwd):
+    aprx = arcpy.mp.ArcGISProject(cwd + r"\PythonFinal.aprx")
+    m = aprx.listMaps("Map")[0]
+    lyr = m.listLayers("ParksIntersect")[0]
+    lyr2 =m.listLayers("SelectedPark")[0]
+    sym = lyr.symbology
+    sym2 = lyr2.symbology
+    Green = {"RGB":[34,139,34,100]}
+    Orange = {"RGB":[255,165,0,100]}
+    if lyr.isFeatureLayer and hasattr(sym, "renderer"):
+        sym.renderer.symbol.color = Green
+        lyr.symbology = sym
+    if lyr2.isFeatureLayer and hasattr(sym2, "renderer"):
+        sym2.renderer.symbol.color = Orange
+        lyr.symbology = sym2
+    aprx.saveACopy("UpdatedSelectedParks.aprx")
+    del aprx
+
+#Ensuring the right parks are selected based on activity input
+def SelectingParks(SwimmingOption, HikingOption, CampingOption,cwd):
+    env.overwriteOutput = True
+    in_features = cwd + r"\Default.gdb\ParksIntersect"
+    out_feature_class = cwd + r"\Default.gdb\SelectedPark"
+
+    if (SwimmingOption == "yes" and HikingOption == "yes" and CampingOption =="yes") \
+        or (SwimmingOption == "no" and HikingOption == "no" and CampingOption =="no"):
+        Swimming = '"Swimming"' + "=" + "'" + SwimmingOption + "'"
+        Camping = '"Camping"' + "=" + "'" + CampingOption + "'"
+        Hiking = '"Hiking"' + "=" + "'" + HikingOption + "'"
+        where_clause = Swimming + " and " + Camping + " and " + Hiking
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    elif SwimmingOption == "yes" and HikingOption == "yes":
+        Swimming = '"Swimming"' + "=" + "'" + SwimmingOption + "'"
+        Hiking = '"Hiking"' + "=" + "'" + HikingOption + "'"
+        where_clause = Swimming + " and " + Hiking
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    elif HikingOption == "yes" and CampingOption =="yes":
+        Camping = '"Camping"' + "=" + "'" + CampingOption + "'"
+        Hiking = '"Hiking"' + "=" + "'" + HikingOption + "'"
+        where_clause = Camping + " and " + Hiking
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    elif SwimmingOption == "yes" and CampingOption =="yes":
+        Swimming = '"Swimming"' + "=" + "'" + SwimmingOption + "'"
+        Camping = '"Camping"' + "=" + "'" + CampingOption + "'"
+        where_clause = Swimming + " and " + Camping
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    elif SwimmingOption == "yes":
+        Swimming = '"Swimming"' + "=" + "'" + SwimmingOption + "'"
+        where_clause = Swimming
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    elif HikingOption == "yes":
+        Hiking = '"Hiking"' + "=" + "'" + HikingOption + "'"
+        where_clause = Hiking
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    elif CampingOption =="yes":
+        Camping = '"Camping"' + "=" + "'" + CampingOption + "'"
+        where_clause = Camping
+        arcpy.Select_analysis(in_features, out_feature_class, where_clause)
+    else:
+        print("Invalid input: No parks could be selected based on activity input")
+
+# Allows the user to see the selected parks as a table
+def ListSelectedPark(cwd):
+    #List the result in python
+    fc = cwd + r"\Default.gdb\SelectedPark"
+    fields = ["COMMON_SHO","PROVINCIAL","OPERATING_","Swimming","Camping","Hiking"]
+    print("1.Name of Provincial Park", "\t", "2.Type of Park",  "\t","3.Operating","\t","4.Swimming", "\t","5.Camping","\t","6.Hiking" )
+    with arcpy.da.SearchCursor(fc, fields) as cursor:
+        for row in cursor:
+            print(f"{'{0}'.format(row[0]):32}|{'{0}'.format(row[1]):24}|{'{0}'.format(row[2]):15}|{'{0}'.format(row[3]):15}|{'{0}'.format(row[4]):14}|{'{0}'.format(row[5]):16}")
+    print()
+    print("To look at symbology of parks, the files are stored at the following path :")
+    print(cwd)
+    print("The file with symbology is saved as UpdatedSelectedParks.aprx")
+    print()
+    print()
+
+#Users input variables including x,y coordinate of their location, distance they are willing to travel and activities they would like to do in the park. 
+def UserInput():
+    try:
+        print("First start with your location..")
+        xcoordinate = float(input("Please enter the x coordinate to 3 decimal places (in decimal degrees, i.e. -80.495): "))
+        ycoordinate = float(input("Please enter the y coordinate to 3 decimal places: (in decimal degrees, i.e. 43.542): "))
+        #The distance is for calculation buffer to select parks within certain area
+        Distance = float(input("What is the distance you are willing to travel? (in km, round to whole number): "))
+ 
+        
+        print("Now let's move onto the park activities..")
+        SwimmingOption = str(input("Would you like swimming in the park? (yes/no): ")) 
+        SwimmingOption = SwimmingOption.lower()
+        CampingOption = str(input("Would you like camping in the park? (yes/no): ")) 
+        CampingOption = CampingOption.lower()
+        HikingOption = str(input("Would you like hiking in the park? (yes/no): "))
+        HikingOption = HikingOption.lower()
+ 
+        #This is ValueError and TypeError handling to check if user input invalid variables
+        if SwimmingOption == "yes" or SwimmingOption == "no":
+            if CampingOption == "yes" or CampingOption == "no":
+                if HikingOption == "yes" or HikingOption == "no":
+                    # The Distance should be equal or greater than 1. Zero or negative value will cause error 
+                    if Distance >= 1:
+                        AllInput = (xcoordinate,ycoordinate,Distance,SwimmingOption,CampingOption,HikingOption)
+                        return(AllInput)
+                    
+        else:
+            print("Error with input: please type yes or no only")
+    except ValueError:
+        print("Error with input: please input values exactly as specified")
+    except TypeError:
+        print("Error with input: please input values exactly as specified")
+        
+# main function used to order other functions and ensure they are receiving the right inputs
+def main():
+    while True:
+        cwd = os.getcwd() # get current working directory
+        print("Current working directory: " + cwd)
+        env.workspace = cwd + r"\Default.gdb"
+    
+        print("------------------------------------------------------------------")
+        print("---------------------- Suitability Analysis ----------------------")
+        print("----------- Provincial Parks in South-Western Ontario ------------")
+        print("------------------------------------------------------------------")
+        print()
+        print(f"This program is designed to support a user in finding Provincial Parks in South-Western Ontario \n" +
+            f"by creating a search radius around the user's starting location and returning a list with all the \n" + 
+            f"parks in their area. This program also allows the user to refine their results by searching only \n" +
+            f"for parks that have the activities they are interested in.")
+        print()
+        print(f"The data for our parks was collected from the Ontario Geohub website and is a subset of the “Provincial \n" +
+            f"Parks Regulated” dataset which was last revised in 2018. The URL is: https://geohub.lio.gov.on.ca/datasets/ \n" +
+            f"lio::provincial-park-regulated/explore?location=44.029165%2C-80.210603%2C7.71")
+        print()
+        print("------------------------------------------------------------------")
+        print()
+        print(f"Considerations and Assumptions: \n" +
+            f"- The coordinate units are decimal degrees, and search distance units are kilometres \n" +
+            f"- The imported data set was modified to include a data set of the 35 Provincial Parks within \n" +
+            f"  South-Western Ontario \n" +
+            f"- This program has the park data for camping, hiking and swimming activities. Other activities  \n" +
+            f"  not included in this list may still be available at the parks \n" +
+            f"- When an activity is not wanted, the park will still stay in the final outputted list but move  \n" +
+            f"  down in match ranking \n" +
+            f"- As this dataset is a standalone dataset and does not get updated,users should check park website  \n" +
+            f"  for availability, hours, or closures")
+        print()
+        print("------------------------------------------------------------------")
+        print()
+        print()
+        print("****NOTE: You need to sign into ArcGIS Pro before using this application.")
+        print()
+        print()
+        try:
+            xcoordinate,ycoordinate,Distance,SwimmingOption,CampingOption,HikingOption = UserInput()
+            print("Starting calculations...")
+            TableCoordinates(xcoordinate, ycoordinate)
+            CreatePointFeature(cwd)
+            print("A starting point has been created at your location.")
+            print("Loading buffer around your location...")
+            Buffer(cwd, Distance)
+            print("Determining the intersecting parks...")
+            Intersect(cwd)
+            Result = arcpy.management.GetCount("ParksIntersect")
+            NumbParks = int(Result[0])
+            if NumbParks > 0:
+                print("Selecting parks based on criteria...")
+                SelectingParks(SwimmingOption, HikingOption, CampingOption,cwd)
+                print("Updating map symbology...")
+                ColourSymbology(cwd)
+                print("------------------------------------------------------------------")
+                print()
+                print("Final selection of parks matching your criteria: ")
+                ListSelectedPark(cwd)
+                break
+            else:
+                print("------------------------------------------------------------------")
+                print("There were no parks selected within your paramaters")
+                tryagain = str(input("Would you like to input other location?(Yes/No): "))
+                tryagain = tryagain.lower()
+                if tryagain == "no":
+                    break
+
+        except TypeError:
+            print("Invalid input")     
+            print("------------------------------------------------------------------")
+            tryagain2 = input("Would you like to restart the program?(Yes/No): ")
+            tryagain2 = tryagain2.lower()
+            if tryagain2 == "yes":
+                continue
+            else:
+                break
+        
+        except Exception as e:
+            print("Unexpected Error!",e)
+            break
+
+    print("Program Ending............")   
+if __name__ == '__main__':
+    main() 
+                </code>
+                </pre>
+            </div>
+        </div>
+        <footer>
+            <div id="BottomAnchor">
+                <p id="PageCredit">&copy; 2024 Faith Best's Profile. All rights reserved.</p>
+            </div>
+        </footer>
+    </body>
+</hmtl>

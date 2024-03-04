@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<hmtl lang="en">
+    <head>
+        <meta charset = "UTF-8">
+        <title>Faith's Portfolio</title>
+        <link rel="Stylesheet" href="Stylesheet2.css">
+        <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+  <script src="https://js.arcgis.com/4.28/"></script>
+
+ <script>
+
+  require([
+      "esri/config",
+      "esri/Map",
+      "esri/views/MapView",
+
+      "esri/layers/FeatureLayer"
+    ],
+
+    function(esriConfig, Map, MapView, FeatureLayer){
+
+     esriConfig.apiKey = "AAPK7ea8e38f6b4b4f969ab170c41c01634akao_m4e5gL3AyABug_bvD9dN7kbXw7BSISXg4Y558XYUVj59ej6DtByYM0Cms4Tz";
+
+      const map = new Map({
+        basemap: "arcgis/navigation" // basemap styles service
+      });
+
+      const view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-99.4569,55.5899], //Longitude, latitude
+        zoom: 2
+      });
+
+
+      
+      // Define a pop-up for ProvinceCapitalPopUP
+      const popupProvCapital = {
+        "title": "Welcome to {CapitalName}!",
+        "content": "<b>This is the capital of:</b> {ProvinceName}<br><b>Description:</b>{Description}"
+      }
+
+    const ProvinceCapPopUP = new FeatureLayer({
+        url: "https://services1.arcgis.com/pMeXRvgWClLJZr3s/ArcGIS/rest/services/FBestMapCanadaCapitals/FeatureServer/1",
+        outFields: ["CapitalName", "ProvinceName","Description"],
+        popupTemplate: popupProvCapital
+      });
+
+      map.add(ProvinceCapPopUP);
+
+    // Define a pop-up for OttawaPopUP
+    const popupProvOttawa = {
+        "title": "Welcome to Capital of Canada!",
+        "content": "<b>Name:</b> {CapitalName}<br><b>Description:</b>{Description}"
+      }
+
+    const OttawaCapPopUP = new FeatureLayer({
+        url: "https://services1.arcgis.com/pMeXRvgWClLJZr3s/ArcGIS/rest/services/FBestMapCanadaCapitals/FeatureServer/0",
+        outFields: ["CapitalName","Description"],
+        popupTemplate: popupProvOttawa
+      });
+
+      map.add(OttawaCapPopUP);
+
+    });
+  </script>
+    </head>
+    <body>
+        <header>
+            <div id="topAnchor">
+                <h1><a href="Home.html">Faith Best</a></h1>
+                <nav>
+                    <ul>
+                        <li><a href="About.html" class = "button" >About</a></li>
+                        <li><a href="Web.html" class = "button" id="CurrentPage">Web</a></li>
+                        <li><a href="Portfolio.html" class = "button">Chartography</a></li>
+                        <li><a href="Portfolio1.html" class = "button">Code</a></li>
+                        <li><a href="Resume.html" class = "button">Resume</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+        <section class="contentBG">
+            <div class="contentBG">
+                <h2>A Website Game</h2>
+            </div>
+            <div class = "container, contentBG">
+                <div class="contentBG">
+                    <p class="BioPara">The following is an example of an idea for a pop-up window website game I created for kids to learn about Canada and its Capitals. Utilizing Javascript, ArcGIS Pro and ArcGIS Online, as well as ArcGIS Developer's help guides and tutorials, this game was created. 
+                    </p>
+                </div>
+            </div>
+            <div class="textbox">
+                <h2>Canada, home to more than just Polar Bears</h2>
+                <p>Welcome to Canada, the land of maple syrup, hockey, and breathtaking adventures! Did you know that Canada is the second-largest country in the world? That means there's so much to explore, from the towering Rocky Mountains in the west to the stunning Atlantic coastline in the east. Canada is also home to incredible wildlife, like polar bears in the north and moose in the forests. And let's not forget about the diverse cities, like Toronto, Vancouver, and Montreal, each with its own unique charm and culture. So whether you're skiing down snowy slopes, kayaking on crystal-clear lakes, or munching on poutine (fries with cheese curds and gravy), Canada has something for everyone to enjoy! 🇨🇦🍁</p>
+                <h2>How well do you know Canada?</h2>
+                <h3>Follow the prompts and explore the map to answer the questions</h3>
+                <ul>
+                    <li>What is the nickname given to Saskatchewan due to its wide-open spaces and big, open skies?</li>
+                    <li>Which province is home to the world's first national park, Banff National Park?</li>
+                    <li>What is the name of the iconic waterfall located in Ontario, one of the most famous natural wonders in the world?</li>
+                    <li>Which province is known as the "Polar Bear Capital of the World" because it's one of the best places to see polar bears in their natural habitat?</li>
+                    <li>What is the official language of Quebec, making it unique compared to other provinces in Canada?</li>
+                    <li>Which province is famous for its lobster and has the highest tides in the world in the Bay of Fundy?</li>
+                    <li>What is the capital of Yukon, known for its vast wilderness and the Klondike Gold Rush region?</li>
+                    <li>In which territory can you witness the spectacular Northern Lights?</li>
+                    <li>What is the name of the language spoken by the Inuit people in Nunavut, the northernmost territory in Canada?</li>
+                    <li>Which city in Newfoundland and Labrador is famous for its colorful jellybean-colored houses and is one of the oldest cities in North America?</li>
+                </ul>
+            </div>
+          <div id="viewDiv"></div>
+          <div class="textbox">
+            <p>Credit: Made by Faith B using ArcGIS Pro, and Information and text gernerated by ChatGPT</p>
+          </div>
+        </section>
+        <footer>
+            <div id="BottomAnchor">
+                <p id="PageCredit">&copy; 2024 Faith Best's Profile. All rights reserved.</p>
+            </div>
+        </footer>
+    </body>
+</hmtl>

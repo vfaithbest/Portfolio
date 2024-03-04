@@ -1,0 +1,109 @@
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(193, 218, 240);
+    background-image: url("IMG_8002.png");
+    background-size:cover;
+    background-position: top;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+header{
+    color: black;
+    padding: 45px 0;
+    text-align: center;
+}
+div{
+    background-color: rgba(115, 164, 244, 0.718);
+}
+#topAnchor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 30px 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+#CurrentPage{
+    border: rgba(132, 151, 164, 0.671);
+    color: rgb(77, 77, 77);
+
+}
+.contentBG {
+    background-color: rgb(181, 209, 230);
+}
+
+#BottomAnchor{
+    position: fixed;
+    bottom: 0;
+    left: 0px;
+    width: 100%;
+    height: 75px;
+}
+#PageCredit {
+    text-align: center;
+    padding-bottom: 0;
+    padding-top: 20px;
+    bottom: 0;
+}
+section {
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 75px;
+}
+h1 a{
+    float: left;
+    text-decoration: none;
+    color: black;
+}
+h2{
+    padding-top: 15px;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+h3{
+    font-style: italic;
+    font-size: 16px;
+    margin-top: 5px;
+    font-weight: lighter;
+}
+p{
+    font-size: 14px;
+    margin: 25px;
+    text-align: justify;
+    padding-bottom: 40px;
+}
+.BioPara{
+    margin: 5px 30px 5px 30px;
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 2px;
+}
+nav ul{
+    list-style-type: none;
+    margin: 20px;
+}
+nav ul li{
+    display: inline;
+}
+nav ul li a{
+    color: black;
+    text-decoration: none;
+    float: right;
+    padding: 20px;
+    padding-right: 30px;
+}
+.button{
+    padding: 5px 10px;
+    font-size: 16px;
+}
+.button:hover{
+    background-color:rgba(115, 164, 244, 0.848) ;
+}
+br{
+    padding: 5px;
+}
+
